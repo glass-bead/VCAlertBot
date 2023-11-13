@@ -53,6 +53,15 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
         if (oldVoice == null, oldVoice != newVoice) {
             var userID = newState.id;
             console.log(`The user ${userID} joined a voice chat.`);
+
+            // Send DM 
+            // TODO: Link a role to this functionality
+            const server = client.guilds.cache.get(GUILD_ID);
+            server.members.cache.forEach(member => {
+                if (member.id == userID) {
+                    member.send(`The user <@` + userID + `> just joined the voice chat.\nIf you have time, why not hop on the channel and say hi?`); 
+                }
+            }); 
         }
     }
 });
