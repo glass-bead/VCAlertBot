@@ -31,6 +31,9 @@ for (const file of commandFiles) {
     }
 }
 
+// Global Variables
+global.VCRole = '';
+
 /* ======================================================== */
 
 // Bot login
@@ -52,16 +55,16 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     if (newVoice != null) {
         if (oldVoice == null, oldVoice != newVoice) {
             var userID = newState.id;
-            console.log(`The user ${userID} joined a voice chat.`);
 
-            // Send DM 
-            // TODO: Link a role to this functionality
+            // Send DM to members (w/ or without role) except member who joined
             const server = client.guilds.cache.get(GUILD_ID);
             server.members.cache.forEach(member => {
-                if (member.id == userID) {
-                    member.send(`The user <@` + userID + `> just joined the voice chat.\nIf you have time, why not hop on the channel and say hi?`); 
+                if (!member.user.bot && member.id != userID) {
+                    if ((global.VCRole !== "" && member.roles.cache.has(global.VCRole)) || (global.VCRole === "")) {
+                        member.send(`The user <@` + userID + `> just joined the voice chat.\nIf you have time, why not hop on the channel and say hi?`);
+                    }
                 }
-            }); 
+            });
         }
     }
 });
@@ -71,12 +74,12 @@ client.on('interactionCreate', async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
     const command = interaction.client.commands.get(interaction.commandName);
-	if (!command) return console.error(`No command matching ${interaction.commandName} was found.`);
+    if (!command) return console.error(`No command matching ${interaction.commandName} was found.`);
 
-	try {
+    try {
         await command.execute(interaction);
-	} catch (error) {
-		console.error(error);
-		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
-	}
+    } catch (error) {
+        console.error(error);
+        await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+    }
 });
