@@ -33,6 +33,7 @@ for (const file of commandFiles) {
 
 // Global Variables
 global.VCRole = '';
+global.VCMode = 'empty';
 
 /* ======================================================== */
 
@@ -44,10 +45,23 @@ client.on('ready', () => {
     console.log(`${client.user.tag} is online.`);
 });
 
+// Function that sends DM to members based on admin configurations
+function sendDM(userID) {
+    
+    // Send DM to members (w/ or without role) except member who joined
+    const server = client.guilds.cache.get(GUILD_ID);
+    server.members.cache.forEach(member => {
+        if (!member.user.bot && member.id != userID) {
+            if ((global.VCRole !== "" && member.roles.cache.has(global.VCRole)) || (global.VCRole === "")) {
+                member.send(`The user <@` + userID + `> just joined the voice chat.\nIf you have time, why not hop on the channel and say hi?`);
+            }
+        }
+    });
+}
 
 // Checks if member joins a VC
 client.on('voiceStateUpdate', async (oldState, newState) => {
-
+    
     var oldVoice = oldState.channelId;
     var newVoice = newState.channelId;
 
@@ -56,15 +70,15 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
         if (oldVoice == null, oldVoice != newVoice) {
             var userID = newState.id;
 
-            // Send DM to members (w/ or without role) except member who joined
-            const server = client.guilds.cache.get(GUILD_ID);
-            server.members.cache.forEach(member => {
-                if (!member.user.bot && member.id != userID) {
-                    if ((global.VCRole !== "" && member.roles.cache.has(global.VCRole)) || (global.VCRole === "")) {
-                        member.send(`The user <@` + userID + `> just joined the voice chat.\nIf you have time, why not hop on the channel and say hi?`);
-                    }
-                }
-            });
+            // Sends DM only when members joins an empty VC
+            if (global.VCMode === 'empty') {
+                let { members } = newState.channel;
+                if (members.size <= 1) sendDM(userID);
+            }    
+            // Sends DM every time a member joins a VC
+            else if (global.VCMode === 'all') {
+                sendDM(userID);
+            }
         }
     }
 });
