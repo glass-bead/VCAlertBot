@@ -34,6 +34,7 @@ for (const file of commandFiles) {
 // Global Variables
 global.VCRole = '';
 global.VCMode = 'empty';
+global.VCSilence = [];
 
 /* ======================================================== */
 
@@ -47,7 +48,7 @@ client.on('ready', () => {
 
 // Function that sends DM to members based on admin configurations
 function sendDM(userID) {
-    
+
     // Send DM to members (w/ or without role) except member who joined
     const server = client.guilds.cache.get(GUILD_ID);
     server.members.cache.forEach(member => {
@@ -66,7 +67,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     var newVoice = newState.channelId;
 
     // When a user joins a VC
-    if (newVoice != null) {
+    if (newVoice != null && !(global.VCSilence).includes(newVoice)) {
         if (oldVoice == null, oldVoice != newVoice) {
             var userID = newState.id;
 
