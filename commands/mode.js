@@ -1,4 +1,13 @@
-const { SlashCommandBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder, PermissionFlagsBits, Component, ComponentType } = require('discord.js');
+const fs = require('fs');
+const U = require('./../utilities/utilities.js');
+const D = './data.json';
+
+// Create data file if non existent
+if (!fs.existsSync(D)) U.createFile(D)
+const js = require ('jsonfile');
+const data = js.readFileSync(D);
+
+const { SlashCommandBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -37,7 +46,11 @@ module.exports = {
         });
 
         collector.on("collect", (collection) => {
-            global.VCMode = collection.values[0]; // change VC mode
+           
+            // Save new VC mode to data file
+            data.mode = collection.values[0];
+            js.writeFileSync(D, data);
+
         });
 
         collector.on('end', async (collected, reason) => {

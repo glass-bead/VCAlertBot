@@ -31,10 +31,13 @@ for (const file of commandFiles) {
     }
 }
 
-// Global Variables
-global.VCRole = '';
-global.VCMode = 'empty';
-global.VCSilence = [];
+// Load or create data file to save user configurations
+const U = require('./utilities/utilities.js');
+const D = './data.json';
+
+if (!fs.existsSync(D)) U.createFile(D)
+const js = require('jsonfile');
+const data = js.readFileSync(D);
 
 /* ======================================================== */
 
@@ -53,7 +56,7 @@ function sendDM(userID) {
     const server = client.guilds.cache.get(GUILD_ID);
     server.members.cache.forEach(member => {
         if (!member.user.bot && member.id != userID) {
-            if ((global.VCRole !== "" && member.roles.cache.has(global.VCRole)) || (global.VCRole === "")) {
+            if ((data.role !== "" && member.roles.cache.has(data.role)) || (data.role === "")) {
                 member.send(`The user <@` + userID + `> just joined the voice chat.\nIf you have time, why not hop on the channel and say hi?`);
             }
         }
@@ -67,17 +70,17 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     var newVoice = newState.channelId;
 
     // When a user joins a VC
-    if (newVoice != null && !(global.VCSilence).includes(newVoice)) {
+    if (newVoice != null && !(data.silence).includes(newVoice)) {
         if (oldVoice == null, oldVoice != newVoice) {
             var userID = newState.id;
 
             // Sends DM only when members joins an empty VC
-            if (global.VCMode === 'empty') {
+            if (data.mode === 'empty') {
                 let { members } = newState.channel;
                 if (members.size <= 1) sendDM(userID);
             }    
             // Sends DM every time a member joins a VC
-            else if (global.VCMode === 'all') {
+            else if (data.mode === 'all') {
                 sendDM(userID);
             }
         }

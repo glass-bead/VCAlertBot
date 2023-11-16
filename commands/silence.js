@@ -1,3 +1,12 @@
+const fs = require('fs');
+const U = require('./../utilities/utilities.js');
+const D = './data.json';
+
+// Create data file if non existent
+if (!fs.existsSync(D)) U.createFile(D)
+const js = require('jsonfile');
+const data = js.readFileSync(D);
+
 const { SlashCommandBuilder, ChannelType, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
@@ -41,32 +50,39 @@ module.exports = {
         if (subcommand === 'add') {
             const channelName = interaction.options.getChannel('voice-channel');
 
-            if ((global.VCSilence).includes(channelName.id)) {
+            if ((data.silence).includes(channelName.id)) {
                 message = `${channelName} notifications are already being silenced.`;
             }
             else {
-                global.VCSilence.push(channelName.id);
+                // Add VC to silence array in data file
+                data.silence.push(channelName.id);
+                js.writeFileSync(D, data);
+
                 message = `${channelName} notifications will be silenced.`;
             }
         }
         else if (subcommand === 'remove') {
             const channelName = interaction.options.getChannel('voice-channel');
 
-            const index = (global.VCSilence).indexOf(channelName.id);
+            const index = (data.silence).indexOf(channelName.id);
             if (index > -1) { // only splice array when item is found
-                (global.VCSilence).splice(index, 1);
+                
+                // Remove VC to silence array in data file
+                (data.silence).splice(index, 1);
+                js.writeFileSync(D, data);
+
                 message = `${channelName} notifications won't be silenced anymore.`;
             } else {
                 message = `${channelName} notifications are not silenced.`;
             }
         }
         else if (subcommand === 'view') {
-            if ((global.VCSilence).length === 0) {
-                message = "No voice channel has silenced notifications."
+            if ((data.silence).length === 0) {
+                message = "No voice channels have silenced notifications."
             }
             else {
                 message = "The channels with silenced notifications are: "
-                global.VCSilence.forEach(ch => {
+                data.silence.forEach(ch => {
                     message += " <#" + ch + "> ";
                 });
             }

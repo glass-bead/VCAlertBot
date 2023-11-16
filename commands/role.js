@@ -1,3 +1,12 @@
+const fs = require('fs');
+const U = require('./../utilities/utilities.js');
+const D = './data.json';
+
+// Create data file if non existent
+if (!fs.existsSync(D)) U.createFile(D)
+const js = require('jsonfile');
+const data = js.readFileSync(D);
+
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
@@ -13,7 +22,11 @@ module.exports = {
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     async execute(interaction) {
         const roleName = interaction.options.getRole('role-name');
-        global.VCRole = roleName;
+
+        // Save new VC role to data file
+        data.role = roleName;
+        js.writeFileSync(D, data);
+
         await interaction.reply(`Role set to ${roleName}`);
     },
 };
